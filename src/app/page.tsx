@@ -204,6 +204,7 @@ export default function Dashboard() {
   const [form, setForm] = useState({ etapa: '', ini: '', fim: '' });
   const [view, setView] = useState<ViewType>('table');
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(async () => {
@@ -244,6 +245,11 @@ export default function Dashboard() {
     },
     del: async (id: number) => {
       await fetch(`/api/fases?id=${id}`, { method: 'DELETE' });
+      refresh();
+    },
+    delSelected: async () => {
+      await Promise.all([...selected].map(id => fetch(`/api/fases?id=${id}`, { method: 'DELETE' })));
+      setSelected(new Set());
       refresh();
     },
     add: async () => {
@@ -413,6 +419,22 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Delete selected */}
+          {selected.size > 0 && (
+            <div>
+              <button
+                onClick={actions.delSelected}
+                className="w-full flex items-center gap-3 px-3 py-3 text-sm text-red-600 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 hover:border-red-200 transition-all duration-200 group animate-fade-in"
+              >
+                <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                <div className="text-left">
+                  <span className="block font-semibold">Excluir Selecionados</span>
+                  <span className="text-xs text-red-500">{selected.size} fase(s)</span>
+                </div>
+              </button>
+            </div>
+          )}
+
           {/* Reset */}
           <div className="pt-2 border-t border-neutral-200">
             <button
@@ -553,6 +575,18 @@ export default function Dashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-neutral-50 border-b border-neutral-200">
+                      <th className="px-4 py-3.5 w-10">
+                        <label className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={list.length > 0 && selected.size === list.length}
+                            onChange={e => {
+                              setSelected(e.target.checked ? new Set(list.map(f => f.id)) : new Set());
+                            }}
+                            className="w-4 h-4 rounded border-neutral-300 text-red-500 cursor-pointer focus:ring-red-500"
+                          />
+                        </label>
+                      </th>
                       <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Etapa</th>
                       <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider w-40">Inicio</th>
                       <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider w-40">Fim</th>
@@ -569,8 +603,23 @@ export default function Dashboard() {
                     {list.map((f) => {
                       const ed = editId === f.id;
                       const s = ST[f.Status] || ST['Nao Iniciada'];
+                      const isChecked = selected.has(f.id);
                       return (
-                        <tr key={f.id} className="group transition-colors duration-150 hover:bg-violet-50/40">
+                        <tr key={f.id} className={`group transition-colors duration-150 ${isChecked ? 'bg-red-50/50' : 'hover:bg-violet-50/40'}`}>
+                          <td className="px-4">
+                            <label className="flex items-center justify-center py-4 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={e => {
+                                  const next = new Set(selected);
+                                  e.target.checked ? next.add(f.id) : next.delete(f.id);
+                                  setSelected(next);
+                                }}
+                                className="w-4 h-4 rounded border-neutral-300 text-red-500 cursor-pointer focus:ring-red-500"
+                              />
+                            </label>
+                          </td>
                           <td className="px-6 py-4 font-medium text-neutral-900">{f.Etapa}</td>
                           <td className="px-6 py-4 text-neutral-500">
                             {ed ? (
