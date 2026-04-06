@@ -1,6 +1,8 @@
 # Controle de Processo de Produção
 
-Dashboard interativo em **Python + Streamlit** para gerenciamento visual de múltiplos projetos, etapas produtivas e acompanhamento de cronogramas com persistência de dados em **SQLite**.
+Dashboard interativo para gerenciamento visual de múltiplos projetos, etapas produtivas e acompanhamento de cronogramas.
+
+**Stack:** Next.js 15 (App Router) + Tailwind CSS + shadcn/ui + Recharts + SQLite
 
 ## Funcionalidades
 
@@ -11,56 +13,82 @@ Dashboard interativo em **Python + Streamlit** para gerenciamento visual de múl
 - Persistência automática em banco SQLite (`projeto.db`)
 - Cálculo automático de status das fases (Atraso, Dentro do Prazo, Quase Atraso, etc.)
 - Detecção de sobreposição de datas
-- Gráficos Gantt profissionais com Plotly (cores corretas por status)
+- Gráfico Gantt interativo com cores por status
 - Gráfico de barras com distribuição dos status
-- Interface moderna e interativa usando Streamlit
+- Interface responsiva e profissional com Tailwind CSS
+- Banco de dados SQLite reutilizável do projeto Python anterior
+
+## Instalação
+
+```bash
+npm install
+```
 
 ## Execução
 
 ```bash
-pip install streamlit pandas plotly openpyxl
-streamlit run dashboard_streamlit_profissional.py
+npm run dev
 ```
 
-Acesse em: http://localhost:8501
+Acesse em: http://localhost:3000
 
 ## Estrutura de Arquivos
 
-| Arquivo | Descrição |
-|---|---|
-| `dashboard_streamlit_profissional.py` | Dashboard principal com SQLite, gráficos e importação/exportação |
-| `dashboard_streamlit_editavel.py` | Dashboard com adição e exclusão de fases |
-| `dashboard_streamlit_datas.py` | Dashboard com datas reais e verificação de sobreposição |
-| `dashboard_streamlit_multi.py` | Dashboard baseado em dias (1 a 40) com múltiplos projetos |
-| `dashboard_streamlit_status.py` | Dashboard simples com status por dia |
-| `dashboard_streamlit.py` | Dashboard básico com upload de planilha |
-| `banner_streamlit.py` | Exemplo básico de banner com Streamlit |
-| `banner.py` | Gantt simples baseado em arquivo Excel |
-| `projeto.db` | Banco de dados SQLite (criado automaticamente) |
+```
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx           # Layout global
+│   │   ├── page.tsx             # Dashboard principal
+│   │   └── api/fases/
+│   │       └── route.ts         # API REST (CRUD completo)
+│   └── lib/
+│       └── db.ts                # Camada SQLite (better-sqlite3)
+├── components/
+│   └── ui/                      # shadcn/ui components
+├── lib/
+│   └── utils.ts                 # Utilitários (cn helper)
+├── projeto.db                   # Banco SQLite (criado automaticamente)
+└── .gitignore
+```
+
+## API Endpoints
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/fases` | Retorna todas as fases |
+| GET | `/api/fases?projeto=X` | Retorna fases do projeto X |
+| GET | `/api/fases?action=projects` | Retorna lista de projetos |
+| POST | `/api/fases` | Cria nova fase |
+| PUT | `/api/fases` | Atualiza datas ou status |
+| DELETE | `/api/fases?id=X` | Deleta fase pelo ID |
+| POST | `/api/fases?action=seed` | Resetar dados de exemplo |
+| POST | `/api/fases?action=import` | Importar planilha |
 
 ## Histórico de Atualizações
 
-### v1.0 — Commit inicial
-- Criação dos dashboards Streamlit com dados de exemplo
-- Gráfico Gantt com Plotly
-- Cálculo automático de status
+### v2.0 — Migração para Next.js (Atual)
+- Projeto migrado de Streamlit (Python) para Next.js 15 (React/TypeScript)
+- Interface totalmente reformulada com Tailwind CSS e componentes modernos
+- Gráfico Gantt implementado em SVG responsivo
+- Gráfico de barras com Recharts
+- API REST com CRUD completo para fases e projetos
+- Banco SQLite (better-sqlite3) reutilizado com o mesmo `projeto.db`
+- Importação CSV/Excel, exportação, reset de dados
+- Botões de ação inline (editar, finalizar, excluir)
+- Dados de exemplo inseridos automaticamente se o DB estiver vazio
 
-### v1.1 — Correção das cores do Gantt (`fix: corrigir cores do gráfico Gantt`)
-- Bug: cores do gráfico Gantt estavam trocadas entre os status (Atraso, Dentro do Prazo, etc.)
-- Causa: parâmetro `colors` do `ff.create_gantt` recebia uma lista (mapped por índice) em vez de um dicionário
-- Correção: passado o dicionário `cores` diretamente, mapeando nome do status à cor correta
-- Arquivos corrigidos: `profissional`, `editavel`, `datas`, `multi`, `status`
+### v1.3 — Banco de dados SQLite
+- Integrado SQLite (`projeto.db`) para persistência automática
+- Dados salvos ao editar datas, finalizar fases ou importar planilhas
+- Botão "Resetar para dados de exemplo"
 
-### v1.2 — Importação CSV/Excel, barra lateral e reordenação de gráficos
-- Adicionada barra lateral com upload de planilha CSV e Excel
-- Adicionados botões para baixar modelos CSV e Excel na barra lateral
-- Gráfico de Gantt movido para cima, gráfico de barras movido para baixo
-- Adicionados botões de exportar CSV e Excel no rodapé
-- Renomeada branch de `master` para `main`
+### v1.2 — Importação CSV/Excel e reordenação de gráficos
+- Barra lateral com upload e download de modelos
+- Gráfico de Gantt antes, barras depois
+- Botões de exportar CSV e Excel
 
-### v1.3 — Banco de dados SQLite para persistência
-- Integrado SQLite (`projeto.db`) para persistir alterações de forma permanente
-- Dados salvos automaticamente ao editar datas, finalizar fases ou importar planilhas
-- Carregamento automático do banco ao abrir o dashboard
-- Dados de exemplo inseridos automaticamente se o banco estiver vazio
-- Botão "Resetar para dados de exemplo" na barra lateral
+### v1.1 — Correção das cores do Gantt
+- Cores do gráfico associadas corretamente ao nome do status (não ao índice)
+
+### v1.0 — Criação dos dashboards Streamlit
+- Dashboards iniciais com gráficos Gantt e barras

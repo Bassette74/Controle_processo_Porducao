@@ -1,4 +1,10 @@
-/.venv/
+node_modules/
+.next/
+out/
+*.db
 *.pyc
 __pycache__/
-*.db
+.venv/
+.env*.local
+*.tsbuildinfo
+.cache/
