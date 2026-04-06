@@ -2,52 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Reset & Base ===== */
+/* ===== Dracula Theme =====
+
+/* Dracula Colors:
+   bg:        #282a36
+   current:   #44475a
+   fg:        #f8f8f2
+   comment:   #6272a4
+   cyan:      #8be9fd
+   green:     #50fa7b
+   orange:    #ffb86c
+   pink:      #ff79c6
+   purple:    #bd93f9
+   red:       #ff5555
+   yellow:    #f1fa8c
+*/
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
-    --primary: 0 0% 8%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 8%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 50%;
-    --accent: 251 81% 47%;
-    --accent-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --border-strong: 0 0% 83%;
-    --input: 0 0% 90%;
-    --ring: 251 81% 47%;
+    --background: #282a36;
+    --bg-elevated: #2c2e3e;
+    --bg-subtle: #343746;
+    --current-line: #44475a;
+    --border: #3d3f52;
+    --border-strong: #6272a4;
+    --text-primary: #f8f8f2;
+    --text-secondary: #a0a1b3;
+    --text-tertiary: #6272a4;
+    --drac-cyan: #8be9fd;
+    --drac-green: #50fa7b;
+    --drac-orange: #ffb86c;
+    --drac-pink: #ff79c6;
+    --drac-purple: #bd93f9;
+    --drac-red: #ff5555;
+    --drac-yellow: #f1fa8c;
+    --accent: #bd93f9;
+    --accent-hover: #c9a4ff;
+    --ring: #bd93f9;
     --radius: 0.5rem;
   }
 
   * {
     border-color: var(--border);
-  }
-
-  body {
-    background: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
   }
-}
 
-/* ===== Components ===== */
+  body {
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar dark */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-subtle);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--current-line);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+  }
+}
 
 @layer components {
   .card {
-    background: hsl(var(--card));
+    background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .btn-primary {
@@ -62,14 +93,14 @@
     font-family: inherit;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
+    background: var(--accent);
+    color: var(--bg-elevated);
   }
 
   .btn-primary:hover {
-    opacity: 0.9;
+    background: var(--accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
+    box-shadow: 0 4px 16px rgba(189, 147, 249, 0.3);
   }
 
   .btn-primary:active {
@@ -90,21 +121,21 @@
     cursor: pointer;
     transition: all 0.15s ease;
     background: transparent;
-    color: hsl(var(--muted-foreground));
+    color: var(--text-secondary);
   }
 
   .btn-ghost:hover {
-    background: hsl(var(--secondary));
-    color: hsl(var(--foreground));
+    background: var(--bg-subtle);
+    color: var(--text-primary);
     border-color: var(--border-strong);
   }
 
   .btn-ghost:active {
-    background: hsl(var(--muted));
+    background: var(--current-line);
   }
 
   .stat-card {
-    background: hsl(var(--card));
+    background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 18px 20px;
@@ -113,11 +144,25 @@
 
   .stat-card:hover {
     border-color: var(--border-strong);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .input-dark {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .input-dark:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(189, 147, 249, 0.15);
   }
 }
-
-/* ===== Animations ===== */
 
 @layer utilities {
   @keyframes spin-slow {
@@ -145,14 +190,5 @@
 
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
-  }
-
-  @keyframes pulse-border {
-    0%, 100% { border-color: var(--border); }
-    50% { border-color: var(--accent); }
-  }
-
-  .animate-pulse-border {
-    animation: pulse-border 2s ease-in-out infinite;
   }
 }

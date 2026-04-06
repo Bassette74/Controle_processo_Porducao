@@ -28,34 +28,41 @@ import {
 } from 'lucide-react';
 
 // ============================================================
-// Types
+// Dracula Colors
 // ============================================================
 
-interface Fase {
-  id: number;
-  Projeto: string;
-  Etapa: string;
-  Data_Inicio: string;
-  Data_Fim: string;
-  Status: string;
-}
-
-type StatusType = 'Nao Iniciada' | 'Dentro do Prazo' | 'Quase Atraso' | 'Atraso' | 'Finalizado';
-type ViewType = 'table' | 'gantt' | 'chart';
-
-// ============================================================
-// Status Theme
-// ============================================================
+const DRACULA = {
+  bg: '#282a36',
+  bgElev: '#2c2e3e',
+  bgSubtle: '#343746',
+  currentLine: '#44475a',
+  border: '#3d3f52',
+  borderStrong: '#6272a4',
+  fg: '#f8f8f2',
+  fgDim: '#a0a1b3',
+  comment: '#6272a4',
+  cyan: '#8be9fd',
+  green: '#50fa7b',
+  orange: '#ffb86c',
+  pink: '#ff79c6',
+  purple: '#bd93f9',
+  red: '#ff5555',
+  yellow: '#f1fa8c',
+};
 
 const ST: Record<string, { bg: string; border: string; text: string; solid: string }> = {
-  'Dentro do Prazo': { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', solid: '#22c55e' },
-  'Quase Atraso':  { bg: '#fffbeb', border: '#fde68a', text: '#b45309', solid: '#f59e0b' },
-  'Atraso':        { bg: '#fef2f2', border: '#fecaca', text: '#dc2626', solid: '#ef4444' },
-  'Nao Iniciada':  { bg: '#f9fafb', border: '#e5e7eb', text: '#6b7280', solid: '#9ca3af' },
-  'Finalizado':    { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', solid: '#3b82f6' },
+  'Dentro do Prazo': { bg: '#0d2614', border: '#50fa7b40', text: '#50fa7b', solid: '#50fa7b' },
+  'Quase Atraso':  { bg: '#2d1f00', border: '#ffb86c40', text: '#ffb86c', solid: '#ffb86c' },
+  'Atraso':        { bg: '#2d0f0f', border: '#ff555540', text: '#ff5555', solid: '#ff5555' },
+  'Nao Iniciada':  { bg: '#343746', border: '#6272a440', text: '#a0a1b3', solid: '#6272a4' },
+  'Finalizado':    { bg: '#0d1a2d', border: '#8be9fd40', text: '#8be9fd', solid: '#8be9fd' },
 };
 
 const STATUS_ORDER: StatusType[] = ['Nao Iniciada', 'Dentro do Prazo', 'Quase Atraso', 'Atraso', 'Finalizado'];
+
+type Fase = { id: number; Projeto: string; Etapa: string; Data_Inicio: string; Data_Fim: string; Status: string };
+type StatusType = 'Nao Iniciada' | 'Dentro do Prazo' | 'Quase Atraso' | 'Atraso' | 'Finalizado';
+type ViewType = 'table' | 'gantt' | 'chart';
 
 // ============================================================
 // Helpers
@@ -83,7 +90,7 @@ function calcStatus(f: Fase, ref: string): StatusType {
 
 function GanttChart({ fases }: { fases: (Fase & { Status: StatusType })[] }) {
   if (!fases.length) return (
-    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+    <div className="flex flex-col items-center justify-center py-20" style={{ color: DRACULA.comment }}>
       <CalendarDays className="w-10 h-10 mb-3 opacity-40" />
       <p className="text-sm">Nenhuma fase neste projeto</p>
     </div>
@@ -107,8 +114,8 @@ function GanttChart({ fases }: { fases: (Fase & { Status: StatusType })[] }) {
           const dt = new Date(minT + i * 3 * 86400000);
           return (
             <g key={i}>
-              <line x1={x} y1={2} x2={x} y2={h - 20} stroke="#f5f5f5" strokeWidth={1} />
-              <text x={x} y={h - 4} fontSize={9} fill="#a3a3a3" textAnchor="middle">
+              <line x1={x} y1={2} x2={x} y2={h - 20} stroke={DRACULA.border} strokeWidth={1} />
+              <text x={x} y={h - 4} fontSize={9} fill={DRACULA.comment} textAnchor="middle">
                 {dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
               </text>
             </g>
@@ -125,12 +132,12 @@ function GanttChart({ fases }: { fases: (Fase & { Status: StatusType })[] }) {
           const c = ST[f.Status] || ST['Nao Iniciada'];
           return (
             <g key={f.id}>
-              <text x={228} y={y + bh / 2 + 4} fontSize={10.5} fill="#262626" textAnchor="end" fontWeight="500">
+              <text x={228} y={y + bh / 2 + 4} fontSize={10.5} fill={DRACULA.fgDim} textAnchor="end" fontWeight="500">
                 {f.Etapa.length > 26 ? f.Etapa.slice(0, 24) + '..' : f.Etapa}
               </text>
-              <rect x={x} y={y} width={w} height={bh} rx={7} fill={c.solid} />
+              <rect x={x} y={y} width={w} height={bh} rx={7} fill={c.solid} opacity={0.9} />
               {w > 60 && (
-                <text x={x + w / 2} y={y + bh / 2 + 3.5} fontSize={8.5} fill="white" textAnchor="middle" fontWeight="600">
+                <text x={x + w / 2} y={y + bh / 2 + 3.5} fontSize={8.5} fill={DRACULA.bg} textAnchor="middle" fontWeight="600">
                   {f.Status}
                 </text>
               )}
@@ -150,32 +157,19 @@ function StatusBarChart({ fases }: { fases: (Fase & { Status: StatusType })[] })
   const cnt: Record<string, number> = {};
   STATUS_ORDER.forEach(s => cnt[s] = 0);
   fases.forEach(f => { if (cnt[f.Status] !== undefined) cnt[f.Status]++; });
-
-  const data = STATUS_ORDER.map(s => ({
-    name: s,
-    value: cnt[s],
-    fill: ST[s].solid,
-  }));
+  const data = STATUS_ORDER.map(s => ({ name: s, value: cnt[s], fill: ST[s].solid }));
 
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 10 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" vertical={false} />
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 11, fill: '#737373' }}
-          axisLine={false}
-          tickLine={false}
-          angle={-20}
-          textAnchor="end"
-          height={70}
-        />
-        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#737373' }} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke={DRACULA.border} vertical={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 11, fill: DRACULA.fgDim }} axisLine={false} tickLine={false} angle={-20} textAnchor="end" height={70} />
+        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: DRACULA.fgDim }} axisLine={false} tickLine={false} />
         <Tooltip
-          cursor={{ fill: '#fafafa' }}
+          cursor={{ fill: DRACULA.bgSubtle }}
           contentStyle={{
-            borderRadius: 8, border: '1px solid #e5e5e5',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            borderRadius: 8, border: `1px solid ${DRACULA.border}`,
+            backgroundColor: DRACULA.bgElev, color: DRACULA.fg,
             fontFamily: 'inherit', fontSize: 13, padding: '8px 12px',
           }}
           formatter={(v: number) => [`${v} fase(s)`, 'Quantidade']}
@@ -226,10 +220,7 @@ export default function Dashboard() {
   const list = fases
     .filter(f => f.Projeto === project)
     .filter(f => search === '' || f.Etapa.toLowerCase().includes(search.toLowerCase()))
-    .map(f => {
-      const dbStatus = f.Status;
-      return { ...f, Status: calcStatus(f, ref), dbStatus };
-    });
+    .map(f => ({ ...f, Status: calcStatus(f, ref), dbStatus: f.Status }));
 
   const counts: Record<string, number> = {};
   list.forEach(f => { counts[f.Status] = (counts[f.Status] || 0) + 1; });
@@ -249,8 +240,7 @@ export default function Dashboard() {
     },
     delSelected: async () => {
       await Promise.all([...selected].map(id => fetch(`/api/fases?id=${id}`, { method: 'DELETE' })));
-      setSelected(new Set());
-      refresh();
+      setSelected(new Set()); refresh();
     },
     add: async () => {
       if (!form.etapa || !form.ini || !form.fim) return;
@@ -278,22 +268,19 @@ export default function Dashboard() {
             const wb = XLSX.read(new Uint8Array(ev.target?.result as ArrayBuffer), { type: 'array', cellDates: true });
             data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
           }
-          function toISODate(v: any): string {
+          const toIso = (v: any) => {
             if (!v) return new Date().toISOString().split('T')[0];
             if (v instanceof Date) return v.toISOString().split('T')[0];
             const d = new Date(v);
             return isNaN(d.getTime()) ? new Date().toISOString().split('T')[0] : d.toISOString().split('T')[0];
-          }
-          const mapped = data.map((d: any) => ({
-            Projeto: d.Projeto || 'Projeto 1',
-            Etapa: d.Etapa || '',
-            Data_Inicio: toISODate(d.Data_Inicio),
-            Data_Fim: toISODate(d.Data_Fim),
-            Status: d.Status || 'Nao Iniciada',
-          }));
+          };
           await fetch('/api/fases?action=import', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fases: mapped }),
+            body: JSON.stringify({ fases: data.map((d: any) => ({
+              Projeto: d.Projeto || 'Projeto 1', Etapa: d.Etapa || '',
+              Data_Inicio: toIso(d.Data_Inicio), Data_Fim: toIso(d.Data_Fim),
+              Status: d.Status || 'Nao Iniciada',
+            }))}),
           });
           refresh();
         } catch {}
@@ -302,11 +289,8 @@ export default function Dashboard() {
       if (fileRef.current) fileRef.current.value = '';
     },
     exportCsv: () => {
-      const hdr = 'Projeto,Etapa,Data_Inicio,Data_Fim,Status';
-      const rows = list.map(f => `${f.Projeto},${f.Etapa},${f.Data_Inicio},${f.Data_Fim},${f.Status}`);
-      const blob = new Blob(['\ufeff' + [hdr, ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = `${project}.csv`; a.click();
+      const blob = new Blob(['\ufeffProjeto,Etapa,Data_Inicio,Data_Fim,Status\n' + list.map(f => `${f.Projeto},${f.Etapa},${f.Data_Inicio},${f.Data_Fim},${f.Status}`).join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${project}.csv`; a.click();
     },
     exportXlsx: () => {
       const wb = XLSX.utils.book_new();
@@ -316,37 +300,43 @@ export default function Dashboard() {
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
+    <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: DRACULA.bg }}>
       <div className="text-center">
-        <div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="mt-3 text-xs text-neutral-400">Carregando dashboard...</p>
+        <div className="w-6 h-6 border-2" style={{ borderColor: `${DRACULA.purple} transparent transparent transparent`, borderRadius: '50%', animation: 'spin-slow 1s linear infinite' }} />
+        <p className="mt-3 text-sm" style={{ color: DRACULA.comment }}>Carregando dashboard...</p>
       </div>
     </div>
   );
 
-  const STATS: { key: string; label: string }[] = [
+  const STATS = [
     { key: 'Dentro do Prazo', label: 'No prazo' },
     { key: 'Quase Atraso', label: 'Quase atraso' },
     { key: 'Atraso', label: 'Atrasados' },
     { key: 'Finalizado', label: 'Finalizados' },
   ];
 
+  const TABS = [
+    { key: 'table' as ViewType, icon: Columns3, label: 'Tabela' },
+    { key: 'gantt' as ViewType, icon: CalendarDays, label: 'Gantt' },
+    { key: 'chart' as ViewType, icon: BarChart3, label: 'Grafico' },
+  ];
+
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: DRACULA.bg, color: DRACULA.fg }}>
 
       {/* ============================================================ */}
       {/* SIDEBAR */}
       {/* ============================================================ */}
-      <aside className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col shrink-0">
+      <aside className="w-64 flex flex-col shrink-0" style={{ backgroundColor: DRACULA.bgElev, borderRight: `1px solid ${DRACULA.border}` }}>
         {/* Logo */}
-        <div className="px-6 py-5 border-b border-neutral-200">
+        <div className="px-5 py-5" style={{ borderBottom: `1px solid ${DRACULA.border}` }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shadow-sm">
-              <Layers className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: DRACULA.purple }}>
+              <Layers className="w-4 h-4" style={{ color: DRACULA.bg }} />
             </div>
             <div>
-              <span className="text-sm font-semibold text-neutral-900 tracking-tight leading-tight block">Producao</span>
-              <span className="text-[10px] text-neutral-400 font-medium">Controle de processo</span>
+              <span className="text-sm font-semibold tracking-tight block" style={{ color: DRACULA.fg }}>Producao</span>
+              <span className="text-[10px] font-medium" style={{ color: DRACULA.comment }}>Controle de processo</span>
             </div>
           </div>
         </div>
@@ -354,13 +344,16 @@ export default function Dashboard() {
         {/* Project selector */}
         {projects.length > 0 && (
           <div className="px-4 pt-5">
-            <label className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider px-1 mb-1.5 block">Projeto Ativo</label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider px-1 mb-1.5 block" style={{ color: DRACULA.comment }}>Projeto Ativo</label>
             <select
               value={project}
               onChange={e => setProject(e.target.value)}
-              className="w-full text-sm bg-white border border-neutral-200 rounded-lg px-3 py-2.5 text-neutral-700 font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-shadow"
+              className="w-full text-sm rounded-lg px-3 py-2.5 font-medium focus:outline-none transition-shadow"
+              style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.border}`, borderColor: DRACULA.currentLine }}
+              onFocus={e => e.target.style.borderColor = DRACULA.purple}
+              onBlur={e => e.target.style.borderColor = DRACULA.currentLine}
             >
-              {projects.map(p => <option key={p} value={p}>{p}</option>)}
+              {projects.map(p => <option key={p} value={p} style={{ backgroundColor: DRACULA.bgElev }}>{p}</option>)}
             </select>
           </div>
         )}
@@ -369,80 +362,69 @@ export default function Dashboard() {
         <nav className="flex-1 overflow-y-auto px-4 pt-6 space-y-6">
           {/* Import */}
           <div>
-            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider px-1 mb-2">Importar</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: DRACULA.comment }}>Importar</p>
             <input ref={fileRef} type="file" accept=".csv,.xlsx" onChange={e => e.target.files?.[0] && actions.import(e.target.files[0])} className="hidden" />
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-600 rounded-lg hover:bg-white hover:text-neutral-900 hover:shadow-sm transition-all duration-200 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
-                <Upload className="w-4 h-4 text-violet-500" />
+            <button onClick={() => fileRef.current?.click()} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 hover:shadow-sm group" style={{ color: DRACULA.fgDim }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.purple}15` }}>
+                <Upload className="w-4 h-4" style={{ color: DRACULA.purple }} />
               </div>
               <div className="text-left">
                 <span className="block font-medium">Upload arquivo</span>
-                <span className="text-xs text-neutral-400">CSV ou Excel</span>
+                <span className="text-xs" style={{ color: DRACULA.comment }}>CSV ou Excel</span>
               </div>
             </button>
           </div>
 
           {/* Export */}
           <div>
-            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider px-1 mb-2">Exportar</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: DRACULA.comment }}>Exportar</p>
             <div className="space-y-1">
-              <button
-                onClick={actions.exportCsv}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-600 rounded-lg hover:bg-white hover:text-neutral-900 hover:shadow-sm transition-all duration-200 group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+              <button onClick={actions.exportCsv} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 hover:shadow-sm group" style={{ color: DRACULA.fgDim }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.green}15` }}>
+                  <FileSpreadsheet className="w-4 h-4" style={{ color: DRACULA.green }} />
                 </div>
                 <div className="text-left">
                   <span className="block font-medium">Baixar CSV</span>
-                  <span className="text-xs text-neutral-400">Planilha simples</span>
+                  <span className="text-xs" style={{ color: DRACULA.comment }}>Planilha simples</span>
                 </div>
-                <FileDown className="w-3.5 h-3.5 ml-auto text-neutral-300 group-hover:translate-y-0.5 transition-transform" />
+                <FileDown className="w-3.5 h-3.5 ml-auto transition-transform group-hover:translate-y-0.5" style={{ color: DRACULA.borderStrong }} />
               </button>
 
-              <button
-                onClick={actions.exportXlsx}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-600 rounded-lg hover:bg-white hover:text-neutral-900 hover:shadow-sm transition-all duration-200 group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                  <FileSpreadsheet className="w-4 h-4 text-blue-500" />
+              <button onClick={actions.exportXlsx} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 hover:shadow-sm group" style={{ color: DRACULA.fgDim }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.cyan}15` }}>
+                  <FileSpreadsheet className="w-4 h-4" style={{ color: DRACULA.cyan }} />
                 </div>
                 <div className="text-left">
                   <span className="block font-medium">Baixar Excel</span>
-                  <span className="text-xs text-neutral-400">Formato XLSX</span>
+                  <span className="text-xs" style={{ color: DRACULA.comment }}>Formato XLSX</span>
                 </div>
-                <FileDown className="w-3.5 h-3.5 ml-auto text-neutral-300 group-hover:translate-y-0.5 transition-transform" />
+                <FileDown className="w-3.5 h-3.5 ml-auto transition-transform group-hover:translate-y-0.5" style={{ color: DRACULA.borderStrong }} />
               </button>
             </div>
           </div>
 
           {/* Delete selected */}
           {selected.size > 0 && (
-            <div>
+            <div className="animate-fade-in">
               <button
                 onClick={actions.delSelected}
-                className="w-full flex items-center gap-3 px-3 py-3 text-sm text-red-600 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 hover:border-red-200 transition-all duration-200 group animate-fade-in"
+                className="w-full flex items-center gap-3 px-3 py-3 text-sm rounded-lg transition-all duration-200 group"
+                style={{ backgroundColor: `${DRACULA.red}15`, border: `1px solid ${DRACULA.red}30`, color: DRACULA.red }}
               >
-                <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                <Trash2 className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
                 <div className="text-left">
                   <span className="block font-semibold">Excluir Selecionados</span>
-                  <span className="text-xs text-red-500">{selected.size} fase(s)</span>
+                  <span className="text-xs" style={{ color: `${DRACULA.red}cc` }}>{selected.size} fase(s)</span>
                 </div>
               </button>
             </div>
           )}
 
           {/* Reset */}
-          <div className="pt-2 border-t border-neutral-200">
-            <button
-              onClick={actions.reset}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-600 rounded-lg hover:bg-white hover:text-neutral-900 hover:shadow-sm transition-all duration-200 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
-                <RotateCcw className="w-4 h-4 text-amber-500 group-hover:-rotate-180 transition-transform duration-500" />
+          <div className="pt-2" style={{ borderTop: `1px solid ${DRACULA.border}` }}>
+            <button onClick={actions.reset} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 group" style={{ color: DRACULA.fgDim }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.orange}15` }}>
+                <RotateCcw className="w-4 h-4 group-hover:-rotate-180 transition-transform duration-500" style={{ color: DRACULA.orange }} />
               </div>
               <span className="font-medium">Resetar Dados</span>
             </button>
@@ -450,8 +432,8 @@ export default function Dashboard() {
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-neutral-200">
-          <p className="text-[10px] text-neutral-400">v2.0 — Next.js Dashboard</p>
+        <div className="px-5 py-4" style={{ borderTop: `1px solid ${DRACULA.border}` }}>
+          <p className="text-[10px]" style={{ color: DRACULA.comment }}>v2.0 — Next.js Dashboard</p>
         </div>
       </aside>
 
@@ -461,27 +443,22 @@ export default function Dashboard() {
       <div className="flex flex-col flex-1 min-w-0">
 
         {/* Top Bar */}
-        <header className="h-16 border-b border-neutral-200 bg-white flex items-center justify-between px-8 shrink-0">
-          {/* Left: View tabs */}
+        <header className="h-16 flex items-center justify-between px-8 shrink-0" style={{ borderBottom: `1px solid ${DRACULA.border}`, backgroundColor: DRACULA.bg }}>
           <div className="flex items-center gap-6">
-            <h2 className="text-base font-semibold text-neutral-900">
+            <h2 className="text-base font-semibold" style={{ color: DRACULA.fg }}>
               {project || 'Selecione um projeto'}
             </h2>
-            <div className="h-4 w-px bg-neutral-200" />
-            <div className="flex items-center gap-1 bg-neutral-100 rounded-lg p-0.5">
-              {[
-                { key: 'table' as ViewType, icon: Columns3, label: 'Tabela' },
-                { key: 'gantt' as ViewType, icon: CalendarDays, label: 'Gantt' },
-                { key: 'chart' as ViewType, icon: BarChart3, label: 'Grafico' },
-              ].map(t => (
+            <div className="h-4 w-px" style={{ backgroundColor: DRACULA.border }} />
+            <div className="flex items-center gap-1 rounded-lg p-0.5" style={{ backgroundColor: DRACULA.bgSubtle }}>
+              {TABS.map(t => (
                 <button
                   key={t.key}
                   onClick={() => setView(t.key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                    view === t.key
-                      ? 'bg-white text-neutral-900 shadow-sm'
-                      : 'text-neutral-500 hover:text-neutral-700 hover:bg-white/50'
-                  }`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200"
+                  style={view === t.key
+                    ? { backgroundColor: DRACULA.currentLine, color: DRACULA.fg, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }
+                    : { color: DRACULA.comment }
+                  }
                 >
                   <t.icon className="w-3.5 h-3.5" />
                   {t.label}
@@ -490,62 +467,61 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Right: Search + Date + Add */}
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: DRACULA.comment }} />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar fase..."
-                className="w-52 text-sm bg-neutral-50 border border-neutral-200 rounded-lg pl-9 pr-3 py-2 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 focus:bg-white transition-all duration-200"
+                className="w-52 text-sm rounded-lg pl-9 pr-3 py-2 focus:outline-none transition-all duration-200"
+                style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }}
+                placeholder={DRACULA.comment}
+                onFocus={e => e.target.style.borderColor = DRACULA.purple}
+                onBlur={e => e.target.style.borderColor = DRACULA.currentLine}
               />
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2">
-              <CalendarDays className="w-3.5 h-3.5 text-neutral-400" />
+            <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: DRACULA.bgSubtle, border: `1px solid ${DRACULA.border}`, color: DRACULA.fgDim }}>
+              <CalendarDays className="w-3.5 h-3.5" style={{ color: DRACULA.comment }} />
               <span>Ref:</span>
               <input
                 type="date"
                 value={ref}
                 onChange={e => setRef(e.target.value)}
-                className="bg-transparent focus:outline-none text-neutral-700 font-medium"
+                className="bg-transparent focus:outline-none font-medium"
+                style={{ color: DRACULA.fg }}
               />
             </div>
 
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="btn-primary"
-            >
-              <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
+            <button onClick={() => setShowForm(!showForm)} className="btn-primary" style={{ backgroundColor: DRACULA.purple, color: DRACULA.bg }}>
+              <Plus className="w-3.5 h-3.5" />
               Nova Fase
             </button>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="flex-1 overflow-y-auto" style={{ backgroundColor: DRACULA.bg }}>
           <div className="px-8 py-6 max-w-[1400px] mx-auto space-y-6">
 
             {/* Add phase form */}
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              showForm ? 'max-h-40 opacity-100 mb-0' : 'max-h-0 opacity-0 pointer-events-none'
-            }`}>
-              <form onSubmit={e => { e.preventDefault(); actions.add(); }} className="flex items-end gap-3 p-5 bg-violet-50 border border-violet-100 rounded-xl">
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showForm ? 'max-h-40 opacity-100 mb-0' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+              <form onSubmit={e => { e.preventDefault(); actions.add(); }} className="flex items-end gap-3 p-5 rounded-xl" style={{ backgroundColor: `${DRACULA.purple}12`, border: `1px solid ${DRACULA.purple}30` }}>
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider block mb-1.5">Nome da Etapa</label>
-                  <input value={form.etapa} onChange={e => setForm({ ...form, etapa: e.target.value })} placeholder="Ex: Montagem" className="w-full text-sm bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500" />
+                  <label className="text-[10px] font-semibold uppercase tracking-wider block mb-1.5" style={{ color: DRACULA.comment }}>Nome da Etapa</label>
+                  <input value={form.etapa} onChange={e => setForm({ ...form, etapa: e.target.value })} placeholder="Ex: Montagem" className="w-full text-sm rounded-lg px-3.5 py-2.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} placeholder={DRACULA.comment} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider block mb-1.5">Data Inicio</label>
-                  <input type="date" value={form.ini} onChange={e => setForm({ ...form, ini: e.target.value })} className="text-sm bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <label className="text-[10px] font-semibold uppercase tracking-wider block mb-1.5" style={{ color: DRACULA.comment }}>Data Inicio</label>
+                  <input type="date" value={form.ini} onChange={e => setForm({ ...form, ini: e.target.value })} className="text-sm rounded-lg px-3.5 py-2.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider block mb-1.5">Data Fim</label>
-                  <input type="date" value={form.fim} onChange={e => setForm({ ...form, fim: e.target.value })} className="text-sm bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <label className="text-[10px] font-semibold uppercase tracking-wider block mb-1.5" style={{ color: DRACULA.comment }}>Data Fim</label>
+                  <input type="date" value={form.fim} onChange={e => setForm({ ...form, fim: e.target.value })} className="text-sm rounded-lg px-3.5 py-2.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} />
                 </div>
-                <button type="submit" className="btn-primary">Adicionar</button>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">Cancelar</button>
+                <button type="submit" className="btn-primary" style={{ backgroundColor: DRACULA.purple, color: DRACULA.bg }}>Adicionar</button>
+                <button type="button" onClick={() => setShowForm(false)} className="btn-ghost" style={{ color: DRACULA.fgDim, borderColor: DRACULA.currentLine }}>Cancelar</button>
               </form>
             </div>
 
@@ -555,15 +531,13 @@ export default function Dashboard() {
                 const c = ST[key] || ST['Nao Iniciada'];
                 const count = counts[key] || 0;
                 return (
-                  <div key={key} className="stat-card">
+                  <div key={key} className="stat-card" style={{ backgroundColor: DRACULA.bgElev, borderColor: DRACULA.border }}>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">{label}</span>
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: DRACULA.comment }}>{label}</span>
                       <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.solid }} />
                     </div>
-                    <div>
-                      <span className="text-3xl font-bold tabular-nums" style={{ color: c.text }}>{count}</span>
-                      <span className="text-xs text-neutral-400 ml-1.5">fase{count !== 1 ? 's' : ''}</span>
-                    </div>
+                    <span className="text-3xl font-bold tabular-nums" style={{ color: c.text }}>{count}</span>
+                    <span className="text-xs ml-1.5" style={{ color: DRACULA.comment }}>fase{count !== 1 ? 's' : ''}</span>
                   </div>
                 );
               })}
@@ -571,41 +545,38 @@ export default function Dashboard() {
 
             {/* Table View */}
             {view === 'table' && (
-              <div className="card">
+              <div className="card" style={{ backgroundColor: DRACULA.bgElev, borderColor: DRACULA.border }}>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-neutral-50 border-b border-neutral-200">
+                    <tr style={{ borderBottom: `1px solid ${DRACULA.border}` }}>
                       <th className="px-4 py-3.5 w-10">
                         <label className="relative flex items-center justify-center">
                           <input
                             type="checkbox"
                             checked={list.length > 0 && selected.size === list.length}
-                            onChange={e => {
-                              setSelected(e.target.checked ? new Set(list.map(f => f.id)) : new Set());
-                            }}
-                            className="w-4 h-4 rounded border-neutral-300 text-red-500 cursor-pointer focus:ring-red-500"
+                            onChange={e => setSelected(e.target.checked ? new Set(list.map(f => f.id)) : new Set())}
+                            className="w-4 h-4 rounded cursor-pointer"
+                            style={{ accentColor: DRACULA.red, backgroundColor: DRACULA.bgSubtle, borderColor: DRACULA.borderStrong }}
                           />
                         </label>
                       </th>
-                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Etapa</th>
-                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider w-40">Inicio</th>
-                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider w-40">Fim</th>
-                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Status</th>
-                      <th className="text-right px-6 py-3.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider w-32">Acoes</th>
+                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: DRACULA.comment }}>Etapa</th>
+                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider w-40" style={{ color: DRACULA.comment }}>Inicio</th>
+                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider w-40" style={{ color: DRACULA.comment }}>Fim</th>
+                      <th className="text-left px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: DRACULA.comment }}>Status</th>
+                      <th className="text-right px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider w-32" style={{ color: DRACULA.comment }}>Acoes</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100">
+                  <tbody className="divide-y" style={{ divideColor: DRACULA.currentLine }}>
                     {list.length === 0 && (
-                      <tr><td colSpan={5} className="px-6 py-20 text-center text-neutral-400 text-sm">
-                        Nenhuma fase encontrada
-                      </td></tr>
+                      <tr><td colSpan={6} className="px-6 py-20 text-center" style={{ color: DRACULA.comment }}>Nenhuma fase encontrada</td></tr>
                     )}
                     {list.map((f) => {
                       const ed = editId === f.id;
                       const s = ST[f.Status] || ST['Nao Iniciada'];
                       const isChecked = selected.has(f.id);
                       return (
-                        <tr key={f.id} className={`group transition-colors duration-150 ${isChecked ? 'bg-red-50/50' : 'hover:bg-violet-50/40'}`}>
+                        <tr key={f.id} className="group transition-colors duration-150" style={{ backgroundColor: isChecked ? `${DRACULA.red}12` : 'transparent' }}>
                           <td className="px-4">
                             <label className="flex items-center justify-center py-4 cursor-pointer">
                               <input
@@ -616,26 +587,24 @@ export default function Dashboard() {
                                   e.target.checked ? next.add(f.id) : next.delete(f.id);
                                   setSelected(next);
                                 }}
-                                className="w-4 h-4 rounded border-neutral-300 text-red-500 cursor-pointer focus:ring-red-500"
+                                className="w-4 h-4 rounded cursor-pointer"
+                                style={{ accentColor: DRACULA.red, backgroundColor: DRACULA.bgSubtle, borderColor: DRACULA.borderStrong }}
                               />
                             </label>
                           </td>
-                          <td className="px-6 py-4 font-medium text-neutral-900">{f.Etapa}</td>
-                          <td className="px-6 py-4 text-neutral-500">
+                          <td className="px-6 py-4 font-medium" style={{ color: DRACULA.fg }}>{f.Etapa}</td>
+                          <td className="px-6 py-4" style={{ color: DRACULA.fgDim }}>
                             {ed ? (
-                              <input type="date" value={editD.i} onChange={e => setEditD({ ...editD, i: e.target.value })} className="text-xs border border-neutral-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                              <input type="date" value={editD.i} onChange={e => setEditD({ ...editD, i: e.target.value })} className="text-xs rounded-md px-2.5 py-1.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} />
                             ) : <span className="font-medium">{fmtDate(f.Data_Inicio)}</span>}
                           </td>
-                          <td className="px-6 py-4 text-neutral-500">
+                          <td className="px-6 py-4" style={{ color: DRACULA.fgDim }}>
                             {ed ? (
-                              <input type="date" value={editD.f} onChange={e => setEditD({ ...editD, f: e.target.value })} className="text-xs border border-neutral-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                              <input type="date" value={editD.f} onChange={e => setEditD({ ...editD, f: e.target.value })} className="text-xs rounded-md px-2.5 py-1.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} />
                             ) : <span className="font-medium">{fmtDate(f.Data_Fim)}</span>}
                           </td>
                           <td className="px-6 py-4">
-                            <span
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                              style={{ backgroundColor: s.bg, color: s.text, border: `1px solid ${s.border}` }}
-                            >
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: s.bg, color: s.text, border: `1px solid ${s.border}` }}>
                               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.solid }} />
                               {f.Status}
                             </span>
@@ -643,27 +612,27 @@ export default function Dashboard() {
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               {!ed ? (
-                                <button onClick={() => { setEditId(f.id); setEditD({ i: f.Data_Inicio, f: f.Data_Fim }); }} className="p-1.5 rounded-md hover:bg-blue-50 text-neutral-300 hover:text-blue-600 transition-all duration-150 hover:scale-110" title="Editar">
+                                <button onClick={() => { setEditId(f.id); setEditD({ i: f.Data_Inicio, f: f.Data_Fim }); }} className="p-1.5 rounded-md transition-all duration-150 hover:scale-110" style={{ color: DRACULA.fgDim }} title="Editar">
                                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                   </svg>
                                 </button>
                               ) : (
                                 <>
-                                  <button onClick={() => actions.save(f.id)} className="p-1.5 rounded-md hover:bg-green-50 text-neutral-300 hover:text-green-600 transition-all duration-150 hover:scale-110">
+                                  <button onClick={() => actions.save(f.id)} className="p-1.5 rounded-md transition-all duration-150 hover:scale-110" style={{ color: DRACULA.green }}>
                                     <CheckCircle2 className="w-4 h-4" />
                                   </button>
-                                  <button onClick={() => setEditId(null)} className="p-1.5 rounded-md hover:bg-neutral-100 text-neutral-300 hover:text-neutral-500 transition-all duration-150 hover:scale-110">
+                                  <button onClick={() => setEditId(null)} className="p-1.5 rounded-md transition-all duration-150 hover:scale-110" style={{ color: DRACULA.comment }}>
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                   </button>
                                 </>
                               )}
                               {f.dbStatus !== 'Finalizado' && f.Status !== 'Finalizado' && (
-                                <button onClick={() => actions.done(f.id)} className="p-1.5 rounded-md hover:bg-violet-50 text-neutral-300 hover:text-violet-600 transition-all duration-150 hover:scale-110" title="Finalizar">
+                                <button onClick={() => actions.done(f.id)} className="p-1.5 rounded-md transition-all duration-150 hover:scale-110" style={{ color: DRACULA.purple }} title="Finalizar">
                                   <CheckCircle2 className="w-4 h-4" />
                                 </button>
                               )}
-                              <button onClick={() => actions.del(f.id)} className="p-1.5 rounded-md hover:bg-red-50 text-neutral-300 hover:text-red-500 transition-all duration-150 hover:scale-110" title="Excluir">
+                              <button onClick={() => actions.del(f.id)} className="p-1.5 rounded-md transition-all duration-150 hover:scale-110" style={{ color: DRACULA.red }} title="Excluir">
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
@@ -678,20 +647,20 @@ export default function Dashboard() {
 
             {/* Gantt View */}
             {view === 'gantt' && (
-              <div className="card px-8 py-6">
+              <div className="card px-8 py-6" style={{ backgroundColor: DRACULA.bgElev, borderColor: DRACULA.border }}>
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: ST['Finalizado'].bg }}>
                     <CalendarDays className="w-4 h-4" style={{ color: ST['Finalizado'].text }} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-neutral-900">Cronograma</h3>
-                    <p className="text-xs text-neutral-400">Visualizacao temporal das fases</p>
+                    <h3 className="text-sm font-semibold" style={{ color: DRACULA.fg }}>Cronograma</h3>
+                    <p className="text-xs" style={{ color: DRACULA.comment }}>Visualizacao temporal das fases</p>
                   </div>
                 </div>
                 <GanttChart fases={list} />
-                <div className="flex flex-wrap gap-5 mt-6 pt-4 border-t border-neutral-100">
+                <div className="flex flex-wrap gap-5 mt-6 pt-4" style={{ borderTop: `1px solid ${DRACULA.border}` }}>
                   {STATUS_ORDER.map(s => (
-                    <span key={s} className="flex items-center gap-2.5 text-xs text-neutral-500 font-medium">
+                    <span key={s} className="flex items-center gap-2.5 text-xs font-medium" style={{ color: DRACULA.fgDim }}>
                       <span className="w-3 h-3 rounded-full" style={{ backgroundColor: ST[s].solid }} />
                       {s}
                     </span>
@@ -702,14 +671,14 @@ export default function Dashboard() {
 
             {/* Chart View */}
             {view === 'chart' && (
-              <div className="card px-8 py-6">
+              <div className="card px-8 py-6" style={{ backgroundColor: DRACULA.bgElev, borderColor: DRACULA.border }}>
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: ST['Dentro do Prazo'].bg }}>
                     <BarChart3 className="w-4 h-4" style={{ color: ST['Dentro do Prazo'].text }} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-neutral-900">Distribuicao dos Status</h3>
-                    <p className="text-xs text-neutral-400">{list.length} fase(s) no total</p>
+                    <h3 className="text-sm font-semibold" style={{ color: DRACULA.fg }}>Distribuicao dos Status</h3>
+                    <p className="text-xs" style={{ color: DRACULA.comment }}>{list.length} fase(s) no total</p>
                   </div>
                 </div>
                 <StatusBarChart fases={list} />
