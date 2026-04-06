@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"fix: corrigir cores do gráfico Gantt associando status correto às cores:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Bash(streamlit run:*)",
+      "Bash(/c/Users/User/Desktop/python/.venv/Scripts/python.exe -c \"import streamlit; print\\(streamlit.__version__\\)\" 2>&1)",
+      "Bash(/c/Users/User/Desktop/python/.venv/Scripts/python.exe --version)",
+      "Bash(/c/Users/User/Desktop/python/.venv/Scripts/pip.exe list:*)",
+      "Bash(python -m pip install streamlit pandas plotly openpyxl openpyxl)",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(ls /c/Python*/python.exe)",
+      "Read(//c/Users/User/AppData/Local/Programs/Python/**)"
+    ]
+  }
+}
