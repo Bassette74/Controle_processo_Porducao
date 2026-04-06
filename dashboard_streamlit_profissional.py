@@ -17,7 +17,54 @@ st.markdown("""
 
 st.title("📊 Dashboard Multi-Projeto - Visual Profissional")
 
-# Dados de exemplo com datas reais
+# --- BARRA LATERAL ---
+st.sidebar.header("Importar / Exportar")
+
+# Download modelo CSV
+modelo_csv = pd.DataFrame({
+    "Projeto": ["Projeto 1", "Projeto 1"],
+    "Etapa": ["Exemplo Fase 1", "Exemplo Fase 2"],
+    "Data_Inicio": [date.today().isoformat(), date.today().isoformat()],
+    "Data_Fim": [date.today().isoformat(), date.today().isoformat()],
+    "Status": ["Não Iniciada", "Não Iniciada"]
+})
+buffer_modelo = io.BytesIO()
+modelo_csv.to_csv(buffer_modelo, index=False, encoding="utf-8-sig")
+buffer_modelo.seek(0)
+
+st.sidebar.download_button(
+    label="Baixar modelo CSV",
+    data=buffer_modelo,
+    file_name="modelo_projeto.csv",
+    mime="text/csv"
+)
+
+# Upload CSV
+uploaded_file = st.sidebar.file_uploader("Importar planilha CSV", type=["csv"])
+
+# Download modelo Excel
+modelo_xlsx = pd.DataFrame({
+    "Projeto": ["Projeto 1", "Projeto 1"],
+    "Etapa": ["Exemplo Fase 1", "Exemplo Fase 2"],
+    "Data_Inicio": [date.today(), date.today()],
+    "Data_Fim": [date.today(), date.today()],
+    "Status": ["Não Iniciada", "Não Iniciada"]
+})
+buffer_modelo_xlsx = io.BytesIO()
+modelo_xlsx.to_excel(buffer_modelo_xlsx, index=False)
+buffer_modelo_xlsx.seek(0)
+
+st.sidebar.download_button(
+    label="Baixar modelo Excel",
+    data=buffer_modelo_xlsx,
+    file_name="modelo_projeto.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+# Upload Excel
+uploaded_file_xlsx = st.sidebar.file_uploader("Importar planilha Excel", type=["xlsx"])
+
+# --- Dados de exemplo com datas reais ---
 hoje = date.today()
 fases_exemplo = [
     {"Projeto": "Projeto 1", "Etapa": "Início", "Data_Inicio": hoje, "Data_Fim": hoje, "Status": "Não Iniciada"},
@@ -37,6 +84,26 @@ fases_exemplo = [
 ]
 
 df = pd.DataFrame(fases_exemplo)
+
+# Importar CSV
+if uploaded_file is not None:
+    df_import = pd.read_csv(uploaded_file, sep=";", encoding="utf-8")
+    if df_import.columns.tolist() != ["Projeto", "Etapa", "Data_Inicio", "Data_Fim", "Status"]:
+        df_import = pd.read_csv(uploaded_file, sep=",", encoding="utf-8")
+    for col in ["Data_Inicio", "Data_Fim"]:
+        if col in df_import.columns:
+            df_import[col] = pd.to_datetime(df_import[col]).dt.date
+    df = df_import
+    st.sidebar.success("Planilha CSV importada com sucesso!")
+
+# Importar Excel
+if uploaded_file_xlsx is not None:
+    df_import = pd.read_excel(uploaded_file_xlsx)
+    for col in ["Data_Inicio", "Data_Fim"]:
+        if col in df_import.columns:
+            df_import[col] = pd.to_datetime(df_import[col]).dt.date
+    df = df_import
+    st.sidebar.success("Planilha Excel importada com sucesso!")
 
 # Seleção de projeto
 projetos = df["Projeto"].unique().tolist()
@@ -96,38 +163,10 @@ df_proj["Status"] = df_proj.apply(calcular_status, axis=1)
 st.subheader(f"Tabela do {projeto_selecionado} com Status:")
 st.dataframe(df_proj)
 
-# Botão para exportar para Excel
-buffer = io.BytesIO()
-if st.button("Exportar tabela para Excel"):
-    df_proj.to_excel(buffer, index=False)
-    buffer.seek(0)
-    st.download_button(
-        label="Baixar Excel atualizado",
-        data=buffer,
-        file_name=f"{projeto_selecionado}_atualizado.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-# Cores para o Gantt e barras
+# Cores para os gráficos
 cores = {"Dentro do Prazo": "#4CAF50", "Quase Atraso": "#FFC107", "Atraso": "#F44336", "Não Iniciada": "#90A4AE", "Finalizado": "#2196F3"}
 
-# Gráfico de barras de status
-st.subheader("Distribuição dos Status das Fases")
-status_counts = df_proj["Status"].value_counts().reindex(["Não Iniciada", "Dentro do Prazo", "Quase Atraso", "Atraso", "Finalizado"], fill_value=0)
-bar_colors = [cores.get(status, "#607D8B") for status in status_counts.index]
-fig_bar = go.Figure(data=[go.Bar(
-    x=status_counts.index,
-    y=status_counts.values,
-    marker_color=bar_colors
-)])
-fig_bar.update_layout(
-    xaxis_title="Status",
-    yaxis_title="Quantidade de Fases",
-    plot_bgcolor="#f5f7fa",
-    paper_bgcolor="#f5f7fa",
-    font=dict(size=14)
-)
-st.plotly_chart(fig_bar, use_container_width=True)
+# --- GRÁFICOS ---
 
 # Gráfico de Gantt
 st.subheader("Cronograma do Projeto (Gantt)")
@@ -152,3 +191,48 @@ fig = ff.create_gantt(
     colors=cores
 )
 st.plotly_chart(fig, use_container_width=True)
+
+# Gráfico de barras de status (abaixo do Gantt)
+st.subheader("Distribuição dos Status das Fases")
+status_counts = df_proj["Status"].value_counts().reindex(["Não Iniciada", "Dentro do Prazo", "Quase Atraso", "Atraso", "Finalizado"], fill_value=0)
+bar_colors = [cores.get(status, "#607D8B") for status in status_counts.index]
+fig_bar = go.Figure(data=[go.Bar(
+    x=status_counts.index,
+    y=status_counts.values,
+    marker_color=bar_colors
+)])
+fig_bar.update_layout(
+    xaxis_title="Status",
+    yaxis_title="Quantidade de Fases",
+    plot_bgcolor="#f5f7fa",
+    paper_bgcolor="#f5f7fa",
+    font=dict(size=14)
+)
+st.plotly_chart(fig_bar, use_container_width=True)
+
+# Exportar CSV
+buffer_csv = io.BytesIO()
+df_proj.to_csv(buffer_csv, index=False, encoding="utf-8-sig")
+buffer_csv.seek(0)
+
+col_exp1, col_exp2, col_exp3 = st.columns(3)
+with col_exp1:
+    st.download_button(
+        label="Baixar CSV",
+        data=buffer_csv,
+        file_name=f"{projeto_selecionado}_atualizado.csv",
+        mime="text/csv"
+    )
+with col_exp2:
+    buffer_xlsx = io.BytesIO()
+    df_proj.to_excel(buffer_xlsx, index=False)
+    buffer_xlsx.seek(0)
+    st.download_button(
+        label="Baixar Excel",
+        data=buffer_xlsx,
+        file_name=f"{projeto_selecionado}_atualizado.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+st.markdown("---")
+st.caption("Dashboard Multi-Projeto - Controle de Processo de Produção")
