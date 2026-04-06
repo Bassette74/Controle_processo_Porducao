@@ -6,7 +6,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  webpack: (config: any) => {
+  webpack: (config: any, { dev }: { dev: boolean }) => {
+    if (dev) {
+      config.cache = false;
+    }
     config.externals.push({
       'better-sqlite3': 'commonjs better-sqlite3',
     });

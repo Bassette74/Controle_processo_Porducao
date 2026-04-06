@@ -225,7 +225,10 @@ export default function Dashboard() {
   const list = fases
     .filter(f => f.Projeto === project)
     .filter(f => search === '' || f.Etapa.toLowerCase().includes(search.toLowerCase()))
-    .map(f => ({ ...f, Status: calcStatus(f, ref) }));
+    .map(f => {
+      const dbStatus = f.Status;
+      return { ...f, Status: calcStatus(f, ref), dbStatus };
+    });
 
   const counts: Record<string, number> = {};
   list.forEach(f => { counts[f.Status] = (counts[f.Status] || 0) + 1; });
@@ -266,14 +269,20 @@ export default function Dashboard() {
               return o;
             });
           } else {
-            const wb = XLSX.read(new Uint8Array(ev.target?.result as ArrayBuffer), { type: 'array' });
+            const wb = XLSX.read(new Uint8Array(ev.target?.result as ArrayBuffer), { type: 'array', cellDates: true });
             data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+          }
+          function toISODate(v: any): string {
+            if (!v) return new Date().toISOString().split('T')[0];
+            if (v instanceof Date) return v.toISOString().split('T')[0];
+            const d = new Date(v);
+            return isNaN(d.getTime()) ? new Date().toISOString().split('T')[0] : d.toISOString().split('T')[0];
           }
           const mapped = data.map((d: any) => ({
             Projeto: d.Projeto || 'Projeto 1',
             Etapa: d.Etapa || '',
-            Data_Inicio: d.Data_Inicio ? new Date(d.Data_Inicio).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-            Data_Fim: d.Data_Fim ? new Date(d.Data_Fim).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            Data_Inicio: toISODate(d.Data_Inicio),
+            Data_Fim: toISODate(d.Data_Fim),
             Status: d.Status || 'Nao Iniciada',
           }));
           await fetch('/api/fases?action=import', {
@@ -600,7 +609,7 @@ export default function Dashboard() {
                                   </button>
                                 </>
                               )}
-                              {f.Status !== 'Finalizado' && (
+                              {f.dbStatus !== 'Finalizado' && f.Status !== 'Finalizado' && (
                                 <button onClick={() => actions.done(f.id)} className="p-1.5 rounded-md hover:bg-violet-50 text-neutral-300 hover:text-violet-600 transition-all duration-150 hover:scale-110" title="Finalizar">
                                   <CheckCircle2 className="w-4 h-4" />
                                 </button>
