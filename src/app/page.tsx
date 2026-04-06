@@ -218,11 +218,11 @@ export default function Dashboard() {
         setFases(d);
         const p = [...new Set(d.map((f: Fase) => f.Projeto))];
         setProjects(p);
-        if (p.length && !project) setProject(p[0]);
+        setProject(prev => prev || (p[0] || ''));
       }
     } catch {}
     setLoading(false);
-  }, [project]);
+  }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
 
