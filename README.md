@@ -16,6 +16,8 @@ Dashboard interativo para gerenciamento visual de múltiplos projetos, etapas pr
 - Gráfico Gantt interativo com cores por status
 - Gráfico de barras com distribuição dos status
 - Interface responsiva e profissional com Tailwind CSS
+- Tema Dracula (cores #282a36, #8be9fd, #50fa7b, #bd93f9, etc.)
+- Upload de logo da empresa na sidebar com persistência via localStorage
 - Banco de dados SQLite reutilizável do projeto Python anterior
 
 ## Instalação
