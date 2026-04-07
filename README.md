@@ -126,3 +126,10 @@ Para receber alertas quando uma fase entrar em "Quase Atraso" (a ≤2 dias do ve
 - Envia email por fase em "Quase Atraso" (≤2 dias do vencimento)
 - Configurado via nodemailer + Gmail SMTP
 - Arquivo .env.local com: EMAIL_USER, EMAIL_APP_PASSWORD, EMAIL_RECIPIENT
+
+### v2.9 — Configuracao de Email na UI + Alertas Automaticos
+- Painel de configuracoes na sidebar (engrenagem) com campos: email, app password, destinatario
+- Configuracao salva via localStorage — sem necessidade de arquivo .env
+- Alerta automatico disparado ao carregar a pagina quando fase entra em "Quase Atraso"
+- Indicador visual "Alertas autom. ativados" quando email configurado
+- Botao "Enviar alerta agora" para teste manual mesmo com alerta automatico
