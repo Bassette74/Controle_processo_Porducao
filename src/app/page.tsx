@@ -351,7 +351,7 @@ function HistoryLog({ history, fases }: { history: HistoryEntry[]; fases: Fase[]
 // ============================================================
 
 function TemplatesPanel({ templates, onSave, onDelete, onApply, onCurrent }: {
-  templates: Template[]; onSave: () => void; onDelete: (id: number) => void; onApply: (id: number) => void; onCurrent: () => void;
+  templates: Template[]; onSave: (nome: string, desc: string) => void; onDelete: (id: number) => void; onApply: (id: number) => void; onCurrent: () => void;
 }) {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
@@ -369,7 +369,7 @@ function TemplatesPanel({ templates, onSave, onDelete, onApply, onCurrent }: {
         <div className="space-y-2 animate-fade-in">
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Nome do template" className="w-full text-xs rounded-md px-2.5 py-2 focus:outline-none" style={{ backgroundColor: DRACULA.currentLine, color: DRACULA.fg, border: `1px solid ${DRACULA.border}` }} />
           <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Descricao" className="w-full text-xs rounded-md px-2.5 py-2 focus:outline-none" style={{ backgroundColor: DRACULA.currentLine, color: DRACULA.fg, border: `1px solid ${DRACULA.border}` }} />
-          <button onClick={() => { onSave(); setShowForm(false); setName(''); setDesc(''); }} className="text-xs px-4 py-1.5 rounded-md font-medium" style={{ backgroundColor: DRACULA.green, color: DRACULA.bg }}>Criar</button>
+          <button onClick={() => { onSave(name, desc || 'Template'); setShowForm(false); setName(''); setDesc(''); }} className="text-xs px-4 py-1.5 rounded-md font-medium" style={{ backgroundColor: DRACULA.green, color: DRACULA.bg }}>Criar</button>
         </div>
       )}
       {templates.map(t => {
@@ -586,8 +586,9 @@ export default function Dashboard() {
       XLSX.writeFile(wb, `${project}.xlsx`);
     },
     exportPdf: () => { exportPDF(list, project); },
-    templateSave: async () => {
-      await fetch('/api/fases?action=template-current', { method: 'POST' });
+    templateSave: async (nome: string, desc: string) => {
+      await fetch('/api/fases?action=template-save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, desc }) });
+      fetch('/api/fases?action=templates').then(r => r.json()).then(d => setTemplates(d));
     },
     templateApply: async (id: number) => {
       await fetch('/api/fases?action=template-apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });

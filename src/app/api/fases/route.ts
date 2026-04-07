@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   if (action === 'seed') { seedReset(); return NextResponse.json({ success: true }); }
   if (action === 'import') { importFases(body.fases as Omit<Fase, 'id'>[]); return NextResponse.json({ success: true }); }
-  if (action === 'template-save') { saveTemplate(body.nome || 'Template', body.descricao || '', getAllFases()); return NextResponse.json({ success: true }, { status: 201 }); }
+  if (action === 'template-save') { saveTemplate(body.nome || 'Template', body.desc || '', getAllFases()); return NextResponse.json({ success: true }, { status: 201 }); }
   if (action === 'template-apply') { applyTemplate(body.id); return NextResponse.json({ success: true }); }
   if (action === 'template-current') { saveCurrentAsTemplate(); return NextResponse.json({ success: true }, { status: 201 }); }
 
