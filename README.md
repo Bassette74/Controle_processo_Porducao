@@ -18,6 +18,7 @@ Dashboard interativo para gerenciamento visual de múltiplos projetos, etapas pr
 - Interface responsiva e profissional com Tailwind CSS
 - Tema Dracula (cores #282a36, #8be9fd, #50fa7b, #bd93f9, etc.)
 - Upload de logo da empresa na sidebar com persistência via localStorage
+- Alertas por email para fases em "Quase Atraso" (via Gmail / SMTP)
 - Banco de dados SQLite reutilizável do projeto Python anterior
 
 ## Instalação
@@ -33,6 +34,17 @@ npm run dev
 ```
 
 Acesse em: http://localhost:3000
+
+## Configuração de Alertas por Email
+
+Para receber alertas quando uma fase entrar em "Quase Atraso" (a ≤2 dias do vencimento):
+
+1. Crie uma **App Password** na sua conta Gmail: `Google Account > Security > App passwords`
+2. Copie `.env.local.example` para `.env.local` e preencha os campos:
+   - `EMAIL_USER` — seu email Gmail
+   - `EMAIL_APP_PASSWORD` — a senha de aplicativo gerada
+   - `EMAIL_RECIPIENT` — email que receberá os alertas
+3. Clique no botão **"Enviar Alertas"** na sidebar
 
 ## Estrutura de Arquivos
 
@@ -65,10 +77,11 @@ Acesse em: http://localhost:3000
 | DELETE | `/api/fases?id=X` | Deleta fase pelo ID |
 | POST | `/api/fases?action=seed` | Resetar dados de exemplo |
 | POST | `/api/fases?action=import` | Importar planilha |
+| PATCH | `/api/fases?action=alert` | Enviar alertas de "Quase Atraso" por email |
 
 ## Histórico de Atualizações
 
-### v2.0 — Migração para Next.js (Atual)
+### v2.0 — Migração para Next.js (Inicial)
 - Projeto migrado de Streamlit (Python) para Next.js 15 (React/TypeScript)
 - Interface totalmente reformulada com Tailwind CSS e componentes modernos
 - Gráfico Gantt implementado em SVG responsivo
@@ -78,6 +91,41 @@ Acesse em: http://localhost:3000
 - Importação CSV/Excel, exportação, reset de dados
 - Botões de ação inline (editar, finalizar, excluir)
 - Dados de exemplo inseridos automaticamente se o DB estiver vazio
+
+### v2.1 — Checkboxes e exclusão em bloco
+- Checkboxes na tabela de fases
+- Botão de excluir selecionados na sidebar lateral
+
+### v2.2 — Importacao XLSX corrigida
+- Corrigido parsing de datas no import Excel (serial numbers → Date objects)
+- Corrigido botão "Finalizar" que sobrepunha status original
+
+### v2.3 — CSS/Tailwind corrigido
+- Adicionado postcss.config.mjs (faltava, impedindo compilação do Tailwind)
+- Interface agora renderiza com estilos corretamente
+
+### v2.4 — Bugfix de re-render
+- Corrigido loop infinito de re-renders no carregamento do dashboard
+
+### v2.5 — UI Profissional + Barra Lateral
+- Layout estilo SaaS com sidebar de importação/exportação
+- Botões de importar CSV/Excel, exportar para CSV e XLSX
+- Gráficos reordenados (Gantt em cima, barras embaixo)
+
+### v2.6 — Tema Dracula
+- Tema Dracula aplicado em toda a interface
+- Cores correspondentes ao VSCode Dracula (#282a36, #bd93f9, #50fa7b, #ffb86c, etc.)
+
+### v2.7 — Logo da Empresa
+- Upload de logo da empresa na sidebar
+- Preview com opcoes de editar/remover no hover
+- Persistencia via localStorage (base64)
+
+### v2.8 — Alertas por Email
+- Botão "Enviar Alertas" na sidebar
+- Envia email por fase em "Quase Atraso" (≤2 dias do vencimento)
+- Configurado via nodemailer + Gmail SMTP
+- Arquivo .env.local com: EMAIL_USER, EMAIL_APP_PASSWORD, EMAIL_RECIPIENT
 
 ### v1.3 — Banco de dados SQLite
 - Integrado SQLite (`projeto.db`) para persistência automática
