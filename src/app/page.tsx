@@ -202,11 +202,41 @@ export default function Dashboard() {
   const [logo, setLogo] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [emailConfig, setEmailConfig] = useState({ user: '', appPassword: '', recipient: '' });
+  const [alertStatus, setAlertStatus] = useState<string>('');
+  const [alreadyAlerted, setAlreadyAlerted] = useState<Set<number>>(new Set());
 
   // Load logo from localStorage
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('company-logo') : null;
     if (saved) setLogo(saved);
+  }, []);
+
+  // Auto-send alert email when almost overdue phases appear
+  useEffect(() => {
+    if (!loading && fases.length > 0 && emailConfig.user && emailConfig.recipient && emailConfig.appPassword) {
+      const newAlerts = list.filter(f => f.Status === 'Quase Atraso' && !alreadyAlerted.has(f.id));
+      if (newAlerts.length > 0) {
+        const ids = new Set([...alreadyAlerted, ...newAlerts.map(f => f.id)]);
+        setAlreadyAlerted(ids);
+        fetch('/api/fases?action=alert&ref=' + ref, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emailConfig }),
+        }).catch(() => {});
+      }
+    }
+  }, [loading]);
+
+  // Load email config from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ec = localStorage.getItem('email-config');
+      if (ec) {
+        try { setEmailConfig(JSON.parse(ec)); } catch {}
+      }
+    }
   }, []);
 
   const refresh = useCallback(async () => {
@@ -272,14 +302,43 @@ export default function Dashboard() {
     reset: async () => {
       await fetch('/api/fases?action=seed', { method: 'POST' }); refresh();
     },
+    saveEmailConfig: () => {
+      localStorage.setItem('email-config', JSON.stringify(emailConfig));
+      setAlertStatus('Configuracao salva!');
+      setTimeout(() => setAlertStatus(''), 2000);
+    },
     sendAlerts: async () => {
-      const r = await fetch(`/api/fases?action=alert&ref=${ref}`, { method: 'PATCH' });
+      const ec = localStorage.getItem('email-config');
+      if (!ec) {
+        alert('Configure o email nas configuracoes (engrenagem) primeiro.');
+        return;
+      }
+      const r = await fetch(`/api/fases?action=alert&ref=${ref}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailConfig }),
+      });
       const d = await r.json();
       if (d.alertsSent > 0) {
         alert(d.alertsSent + ' alerta(s) de "Quase Atraso" enviado(s) por email!');
       } else {
         alert('Nenhuma fase em status "Quase Atraso" encontrada.');
       }
+    },
+    autoSendAlert: async () => {
+      const ec = localStorage.getItem('email-config');
+      if (!ec) return;
+      const quaseAtraso = list.filter(f => f.Status === 'Quase Atraso' && !alreadyAlerted.has(f.id));
+      if (quaseAtraso.length === 0) return;
+      const ids = new Set(quaseAtraso.map(f => f.id));
+      for (const id of ids) setAlerted(prev => new Set(prev).add(id));
+      try {
+        await fetch(`/api/fases?action=alert&ref=${ref}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emailConfig }),
+        });
+      } catch {}
     },
     import: async (file: File) => {
       const reader = new FileReader();
@@ -470,17 +529,41 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Reset */}
+          {/* Notifications */}
           <div className="pt-2" style={{ borderTop: `1px solid ${DRACULA.border}` }}>
-            <p className="text-[10px] font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: DRACULA.comment }}>Notificacoes</p>
-            <button onClick={actions.sendAlerts} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 group" style={{ color: DRACULA.fgDim }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.yellow}15` }}>
-                <svg className="w-4 h-4 group-hover:animate-bounce" style={{ color: DRACULA.yellow }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            <div className="flex items-center justify-between px-1 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: DRACULA.comment }}>Notificacoes</p>
+              <button onClick={() => setShowSettings(!showSettings)} className="p-1 rounded transition-colors group" style={{ color: DRACULA.fgDim }} title="Configuracoes de alerta">
+                <svg className="w-3.5 h-3.5 group-hover:text-yellow-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
+              </button>
+            </div>
+
+            {/* Email Settings Panel */}
+            {showSettings && (
+              <div className="mb-3 p-3 rounded-lg space-y-2 animate-fade-in" style={{ backgroundColor: DRACULA.bgSubtle, border: `1px solid ${DRACULA.border}` }}>
+                <input value={emailConfig.user} onChange={e => setEmailConfig({ ...emailConfig, user: e.target.value })} placeholder="Email (Gmail)" className="w-full text-xs rounded-md px-2.5 py-2 focus:outline-none transition-all" style={{ backgroundColor: DRACULA.currentLine, color: DRACULA.fg, border: `1px solid ${DRACULA.border}` }} onFocus={e => e.target.style.borderColor = DRACULA.yellow} onBlur={e => e.target.style.borderColor = DRACULA.border} />
+                <input value={emailConfig.appPassword} onChange={e => setEmailConfig({ ...emailConfig, appPassword: e.target.value })} placeholder="App Password" type="password" className="w-full text-xs rounded-md px-2.5 py-2 focus:outline-none transition-all" style={{ backgroundColor: DRACULA.currentLine, color: DRACULA.fg, border: `1px solid ${DRACULA.border}` }} onFocus={e => e.target.style.borderColor = DRACULA.yellow} onBlur={e => e.target.style.borderColor = DRACULA.border} />
+                <input value={emailConfig.recipient} onChange={e => setEmailConfig({ ...emailConfig, recipient: e.target.value })} placeholder="Email destinatario" className="w-full text-xs rounded-md px-2.5 py-2 focus:outline-none transition-all" style={{ backgroundColor: DRACULA.currentLine, color: DRACULA.fg, border: `1px solid ${DRACULA.border}` }} onFocus={e => e.target.style.borderColor = DRACULA.yellow} onBlur={e => e.target.style.borderColor = DRACULA.border} />
+                <div className="flex items-center gap-2">
+                  <button onClick={actions.saveEmailConfig} className="text-xs px-3 py-1.5 rounded-md font-medium transition-all hover:shadow-sm" style={{ backgroundColor: DRACULA.yellow, color: DRACULA.bg }}>Salvar</button>
+                  <button onClick={actions.sendAlerts} className="text-xs px-3 py-1.5 rounded-md font-medium transition-all hover:shadow-sm" style={{ backgroundColor: DRACULA.orange, color: DRACULA.bg }}>Enviar alerta agora</button>
+                </div>
+                {alertStatus && (
+                  <p className="text-[11px] font-medium" style={{ color: DRACULA.green }}>{alertStatus}</p>
+                )}
               </div>
-              <span className="font-medium">Enviar Alertas</span>
-            </button>
+            )}
+
+            {/* Auto-send indicator */}
+            {emailConfig.user && !showSettings && (
+              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded" style={{ backgroundColor: `${DRACULA.green}08` }}>
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: DRACULA.green }} />
+                <span className="text-[11px]" style={{ color: DRACULA.fgDim }}>Alertas autom. ativados</span>
+              </div>
+            )}
           </div>
 
           <div className="pt-2" style={{ borderTop: `1px solid ${DRACULA.border}` }}>

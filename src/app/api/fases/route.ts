@@ -11,7 +11,7 @@ import {
   getQuaseAtrasoFases,
   type Fase,
 } from '@/src/lib/db';
-import { sendAlertEmail } from '@/src/lib/email';
+import { sendAlerts, type EmailConfig } from '@/src/lib/email';
 
 export async function GET(request: NextRequest) {
   const projeto = request.nextUrl.searchParams.get('projeto');
@@ -87,16 +87,18 @@ export async function DELETE(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const action = request.nextUrl.searchParams.get('action');
+  const body = await request.json().catch(() => ({}));
+  const ref = request.nextUrl.searchParams.get('ref') || new Date().toISOString().split('T')[0];
 
   if (action === 'alert') {
-    const ref = request.nextUrl.searchParams.get('ref') || new Date().toISOString().split('T')[0];
-    const alertFases = getQuaseAtrasoFases(ref);
-    const results: Array<{ projeto: string; etapa: string; sent: boolean }> = [];
-    for (const f of alertFases) {
-      const sent = await sendAlertEmail({ projeto: f.Projeto, etapa: f.Etapa, dataFim: f.Data_Fim });
-      results.push({ projeto: f.Projeto, etapa: f.Etapa, sent });
+    const { user, appPassword, recipient } = (body.emailConfig || {}) as EmailConfig;
+    if (!user || !appPassword || !recipient) {
+      return NextResponse.json({ error: 'Configuracao de email necessaria', alertsSent: 0 });
     }
-    return NextResponse.json({ success: true, alertsSent: alertFases.length, results });
+    const alertFases = getQuaseAtrasoFases(ref);
+    const emailFases = alertFases.map(f => ({ projeto: f.Projeto, etapa: f.Etapa, dataFim: f.Data_Fim }));
+    const { sent } = await sendAlerts({ user, appPassword, recipient }, emailFases);
+    return NextResponse.json({ success: true, alertsSent: sent });
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
