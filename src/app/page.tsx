@@ -199,7 +199,15 @@ export default function Dashboard() {
   const [view, setView] = useState<ViewType>('table');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [logo, setLogo] = useState<string | null>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Load logo from localStorage
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('company-logo') : null;
+    if (saved) setLogo(saved);
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -226,6 +234,20 @@ export default function Dashboard() {
   list.forEach(f => { counts[f.Status] = (counts[f.Status] || 0) + 1; });
 
   const actions = {
+    setLogo: (file: File) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        setLogo(dataUrl);
+        localStorage.setItem('company-logo', dataUrl);
+      };
+      reader.readAsDataURL(file);
+      if (logoRef.current) logoRef.current.value = '';
+    },
+    removeLogo: () => {
+      setLogo(null);
+      localStorage.removeItem('company-logo');
+    },
     save: async (id: number) => {
       await fetch(`/api/fases?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, Data_Inicio: editD.i, Data_Fim: editD.f }) });
       setEditId(null); refresh();
@@ -330,15 +352,34 @@ export default function Dashboard() {
       <aside className="w-64 flex flex-col shrink-0" style={{ backgroundColor: DRACULA.bgElev, borderRight: `1px solid ${DRACULA.border}` }}>
         {/* Logo */}
         <div className="px-5 py-5" style={{ borderBottom: `1px solid ${DRACULA.border}` }}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: DRACULA.purple }}>
-              <Layers className="w-4 h-4" style={{ color: DRACULA.bg }} />
+          <input ref={logoRef} type="file" accept="image/*" onChange={e => e.target.files?.[0] && actions.setLogo(e.target.files[0])} className="hidden" />
+
+          {logo ? (
+            <div className="flex flex-col items-center gap-2">
+              <div className="relative group">
+                <img src={logo} alt="Logo" className="w-12 h-12 rounded-xl object-cover" />
+                <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => logoRef.current?.click()}>
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+                <button onClick={actions.removeLogo} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" title="Remover logo">
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              <span className="text-xs font-semibold tracking-tight" style={{ color: DRACULA.fg }}>Producao</span>
             </div>
-            <div>
-              <span className="text-sm font-semibold tracking-tight block" style={{ color: DRACULA.fg }}>Producao</span>
-              <span className="text-[10px] font-medium" style={{ color: DRACULA.comment }}>Controle de processo</span>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <button onClick={() => logoRef.current?.click()} className="w-16 h-16 rounded-xl flex flex-col items-center justify-center border-2 border-dashed hover:border-purple-400 transition-all duration-200 group" style={{ borderColor: DRACULA.border }}>
+                <Layers className="w-5 h-5 mb-1 transition-colors group-hover:text-violet-400" />
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+              <span className="text-xs" style={{ color: DRACULA.comment }}>Adicionar logo</span>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Project selector */}
