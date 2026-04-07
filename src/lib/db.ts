@@ -171,3 +171,22 @@ export function importFases(fases: Omit<Fase, 'id'>[]): void {
   insertMany(fases);
   db.close();
 }
+
+// ============================================================
+// Email alert for "Quase Atraso"
+// ============================================================
+
+export function getQuaseAtrasoFases(refDate: string): Fase[] {
+  const db = getDb();
+  const rows = db.prepare('SELECT * FROM fases').all();
+  db.close();
+  const hoje = new Date(refDate + 'T00:00:00');
+  return (rows as Fase[]).filter(f => {
+    if (f.Status === 'Finalizado') return false;
+    const inicio = new Date(f.Data_Inicio + 'T00:00:00');
+    const fim = new Date(f.Data_Fim + 'T00:00:00');
+    if (hoje < inicio || hoje > fim) return false;
+    const diff = Math.floor((fim.getTime() - hoje.getTime()) / 86400000);
+    return diff >= 0 && diff <= 2;
+  });
+}

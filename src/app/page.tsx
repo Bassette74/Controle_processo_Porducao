@@ -272,6 +272,15 @@ export default function Dashboard() {
     reset: async () => {
       await fetch('/api/fases?action=seed', { method: 'POST' }); refresh();
     },
+    sendAlerts: async () => {
+      const r = await fetch(`/api/fases?action=alert&ref=${ref}`, { method: 'PATCH' });
+      const d = await r.json();
+      if (d.alertsSent > 0) {
+        alert(d.alertsSent + ' alerta(s) de "Quase Atraso" enviado(s) por email!');
+      } else {
+        alert('Nenhuma fase em status "Quase Atraso" encontrada.');
+      }
+    },
     import: async (file: File) => {
       const reader = new FileReader();
       reader.onload = async (ev) => {
@@ -463,6 +472,18 @@ export default function Dashboard() {
 
           {/* Reset */}
           <div className="pt-2" style={{ borderTop: `1px solid ${DRACULA.border}` }}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: DRACULA.comment }}>Notificacoes</p>
+            <button onClick={actions.sendAlerts} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 group" style={{ color: DRACULA.fgDim }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.yellow}15` }}>
+                <svg className="w-4 h-4 group-hover:animate-bounce" style={{ color: DRACULA.yellow }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <span className="font-medium">Enviar Alertas</span>
+            </button>
+          </div>
+
+          <div className="pt-2" style={{ borderTop: `1px solid ${DRACULA.border}` }}>
             <button onClick={actions.reset} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 group" style={{ color: DRACULA.fgDim }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: `${DRACULA.orange}15` }}>
                 <RotateCcw className="w-4 h-4 group-hover:-rotate-180 transition-transform duration-500" style={{ color: DRACULA.orange }} />
@@ -517,7 +538,6 @@ export default function Dashboard() {
                 placeholder="Buscar fase..."
                 className="w-52 text-sm rounded-lg pl-9 pr-3 py-2 focus:outline-none transition-all duration-200"
                 style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }}
-                placeholder={DRACULA.comment}
                 onFocus={e => e.target.style.borderColor = DRACULA.purple}
                 onBlur={e => e.target.style.borderColor = DRACULA.currentLine}
               />
@@ -551,7 +571,7 @@ export default function Dashboard() {
               <form onSubmit={e => { e.preventDefault(); actions.add(); }} className="flex items-end gap-3 p-5 rounded-xl" style={{ backgroundColor: `${DRACULA.purple}12`, border: `1px solid ${DRACULA.purple}30` }}>
                 <div className="flex-1">
                   <label className="text-[10px] font-semibold uppercase tracking-wider block mb-1.5" style={{ color: DRACULA.comment }}>Nome da Etapa</label>
-                  <input value={form.etapa} onChange={e => setForm({ ...form, etapa: e.target.value })} placeholder="Ex: Montagem" className="w-full text-sm rounded-lg px-3.5 py-2.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} placeholder={DRACULA.comment} />
+                  <input value={form.etapa} onChange={e => setForm({ ...form, etapa: e.target.value })} className="w-full text-sm rounded-lg px-3.5 py-2.5 focus:outline-none" style={{ backgroundColor: DRACULA.bgSubtle, color: DRACULA.fg, border: `1px solid ${DRACULA.currentLine}` }} />
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-wider block mb-1.5" style={{ color: DRACULA.comment }}>Data Inicio</label>

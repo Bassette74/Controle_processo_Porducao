@@ -8,27 +8,29 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "^15.1.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "@types/nodemailer": "^8.0.0",
     "better-sqlite3": "^11.7.0",
-    "recharts": "^2.15.0",
-    "xlsx": "^0.18.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.468.0",
-    "clsx": "^2.1.1",
+    "next": "^15.1.0",
+    "nodemailer": "^8.0.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0",
     "tailwind-merge": "^2.6.0",
-    "class-variance-authority": "^0.7.1"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5.7",
-    "tailwindcss": "^3.4.0",
-    "postcss": "^8",
     "autoprefixer": "^10",
-    "tailwindcss-animate": "^1.0.7"
+    "postcss": "^8",
+    "tailwindcss": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.7"
   }
 }
