@@ -2,7 +2,8 @@
 
 Dashboard interativo para gerenciamento visual de múltiplos projetos, etapas produtivas e acompanhamento de cronogramas.
 
-**Stack:** Next.js 15 (App Router) + Tailwind CSS + shadcn/ui + Recharts + SQLite
+**Stack:** Next.js 15 (App Router) + Tailwind CSS + Recharts + SQLite + Nodemailer
+**Versão:** 3.0 — Dashboard Pro
 
 ## Funcionalidades
 
@@ -19,7 +20,16 @@ Dashboard interativo para gerenciamento visual de múltiplos projetos, etapas pr
 - Tema Dracula (cores #282a36, #8be9fd, #50fa7b, #bd93f9, etc.)
 - Upload de logo da empresa na sidebar com persistência via localStorage
 - Alertas por email para fases em "Quase Atraso" (via Gmail / SMTP)
-- Banco de dados SQLite reutilizável do projeto Python anterior
+- Notificacoes visuais com painel de alertas e badge no header
+- Barra de progresso do projeto (% concluida)
+- Dependencias entre fases (vinculadas no banco)
+- Visualizacao em calendario mensal
+- Exportacao para PDF com relatorio formatado
+- Deteccao automatica de gargalos (etapas com mais atrasos)
+- Templates de projeto (salvar, aplicar, criar, deletar)
+- Historico de alteracoes (log de mudancas)
+- Filtros avancados por status e busca por texto
+- Banco de dados SQLite reutilizavel do projeto Python anterior
 
 ## Instalação
 
@@ -133,3 +143,16 @@ Para receber alertas quando uma fase entrar em "Quase Atraso" (a ≤2 dias do ve
 - Alerta automatico disparado ao carregar a pagina quando fase entra em "Quase Atraso"
 - Indicador visual "Alertas autom. ativados" quando email configurado
 - Botao "Enviar alerta agora" para teste manual mesmo com alerta automatico
+
+### v3.0 — Dashboard Pro (Atual)
+- **Notificacoes visuais** — Painel com sino no header, badge com contagem de alertas, painel dropdown com fases Atraso/Quase Atraso
+- **Barra de progresso** — Mostra % de fases concluidas do projeto em destaque
+- **Dependencias entre fases** — Dropdown na tabela para vincular fases, salvo no banco
+- **Exportar PDF** — Gera relatorio formatado com progresso, resumo e tabela de fases
+- **Deteccao de gargalos** — Identifica etapas com mais atrasos recorrentes
+- **Templates de projeto** — Salvar projeto atual como template, aplicar, criar manual, deletar
+- **Historico de alteracoes** — Log de todas as mudancas (campo, valor antigo, valor novo, data)
+- **Filtros avancados** — Dropdown de filtro por status + busca por texto
+- **Visualizacao em calendario** — Nova aba mostrando fases em grid de calendario mensal
+- Tabela com coluna de Dependencia e dropdown inline
+- Versao atualizada para 3.0 — Dashboard Pro
